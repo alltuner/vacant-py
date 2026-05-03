@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.4](https://github.com/alltuner/vacant-py/compare/v0.3.3...v0.3.4) (2026-05-03)
+
+
+### Bug Fixes
+
+* bump manylinux to 2_28 + allow rebuilding existing tags ([#4](https://github.com/alltuner/vacant-py/issues/4)) ([218af67](https://github.com/alltuner/vacant-py/commit/218af67328d133f99e700ff0bf945eca1cfecb50))
+
 ## [0.3.3](https://github.com/alltuner/vacant-py/compare/v0.3.2...v0.3.3) (2026-05-03)
 
 
