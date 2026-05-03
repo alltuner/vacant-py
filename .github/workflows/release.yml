@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to rebuild and publish (e.g. v0.3.3). Leave blank to defer to release-please."
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -11,6 +16,7 @@ permissions:
 
 jobs:
   release-please:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.tag == '' }}
     runs-on: ubuntu-latest
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
@@ -23,9 +29,26 @@ jobs:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
 
-  build-linux:
+  resolve-tag:
     needs: release-please
-    if: ${{ needs.release-please.outputs.release_created }}
+    if: |
+      always() &&
+      ((needs.release-please.result == 'success' && needs.release-please.outputs.release_created == 'true')
+       || (github.event_name == 'workflow_dispatch' && inputs.tag != ''))
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.pick.outputs.tag }}
+    steps:
+      - id: pick
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.tag }}" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ needs.release-please.outputs.tag_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-linux:
+    needs: resolve-tag
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -33,12 +56,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.release-please.outputs.tag_name }}
+          ref: ${{ needs.resolve-tag.outputs.tag }}
 
       - uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          manylinux: auto
+          manylinux: 2_28
           args: --release --out dist
 
       - uses: actions/upload-artifact@v4
@@ -47,8 +70,7 @@ jobs:
           path: dist
 
   build-macos:
-    needs: release-please
-    if: ${{ needs.release-please.outputs.release_created }}
+    needs: resolve-tag
     runs-on: macos-latest
     strategy:
       matrix:
@@ -56,7 +78,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.release-please.outputs.tag_name }}
+          ref: ${{ needs.resolve-tag.outputs.tag }}
 
       - uses: PyO3/maturin-action@v1
         with:
@@ -69,13 +91,12 @@ jobs:
           path: dist
 
   sdist:
-    needs: release-please
-    if: ${{ needs.release-please.outputs.release_created }}
+    needs: resolve-tag
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.release-please.outputs.tag_name }}
+          ref: ${{ needs.resolve-tag.outputs.tag }}
 
       - uses: PyO3/maturin-action@v1
         with:
@@ -88,8 +109,7 @@ jobs:
           path: dist
 
   publish:
-    needs: [release-please, build-linux, build-macos, sdist]
-    if: ${{ needs.release-please.outputs.release_created }}
+    needs: [resolve-tag, build-linux, build-macos, sdist]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
