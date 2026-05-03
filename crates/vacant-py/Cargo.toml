@@ -1,6 +1,6 @@
 [package]
 name = "vacant-py"
-version = "0.3.4" # x-release-please-version
+version = "0.3.5" # x-release-please-version
 edition = "2021"
 license = "MIT"
 authors = ["David Poblador i Garcia <david@poblador.com>"]
@@ -12,5 +12,5 @@ name = "_core"
 crate-type = ["cdylib"]
 
 [dependencies]
-vacant = "=0.3.4" # x-release-please-version
+vacant = "=0.3.5" # x-release-please-version
 pyo3 = { version = "0.22", features = ["extension-module", "abi3-py311"] }
