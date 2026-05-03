@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.6](https://github.com/alltuner/vacant-py/compare/v0.3.5...v0.3.6) (2026-05-03)
+
+
+### Bug Fixes
+
+* switch vacant pin to caret 0.3 to decouple from lockstep marker ([b8f0574](https://github.com/alltuner/vacant-py/commit/b8f057475168f9d81e57a848e9ecaeceb0b4b1d3))
+
 ## [0.3.5](https://github.com/alltuner/vacant-py/compare/v0.3.4...v0.3.5) (2026-05-03)
 
 
