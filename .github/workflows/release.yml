@@ -16,39 +16,41 @@ permissions:
 
 jobs:
   release-please:
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.tag == '' }}
     runs-on: ubuntu-latest
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
-      version: ${{ steps.release.outputs.version }}
     steps:
-      - uses: googleapis/release-please-action@v5
-        id: release
+      - id: release
+        if: github.event_name != 'workflow_dispatch' || inputs.tag == ''
+        uses: googleapis/release-please-action@v5
         with:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
 
   resolve-tag:
     needs: release-please
-    if: |
-      always() &&
-      ((needs.release-please.result == 'success' && needs.release-please.outputs.release_created == 'true')
-       || (github.event_name == 'workflow_dispatch' && inputs.tag != ''))
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.pick.outputs.tag }}
     steps:
       - id: pick
+        env:
+          DISPATCH_TAG: ${{ inputs.tag }}
+          RP_CREATED: ${{ needs.release-please.outputs.release_created }}
+          RP_TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.tag }}" ]; then
-            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          if [ -n "$DISPATCH_TAG" ]; then
+            echo "tag=$DISPATCH_TAG" >> "$GITHUB_OUTPUT"
+          elif [ "$RP_CREATED" = "true" ]; then
+            echo "tag=$RP_TAG" >> "$GITHUB_OUTPUT"
           else
-            echo "tag=${{ needs.release-please.outputs.tag_name }}" >> "$GITHUB_OUTPUT"
+            echo "no tag to build; downstream jobs will be skipped"
           fi
 
   build-linux:
     needs: resolve-tag
+    if: needs.resolve-tag.outputs.tag != ''
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -71,6 +73,7 @@ jobs:
 
   build-macos:
     needs: resolve-tag
+    if: needs.resolve-tag.outputs.tag != ''
     runs-on: macos-latest
     strategy:
       matrix:
@@ -92,6 +95,7 @@ jobs:
 
   sdist:
     needs: resolve-tag
+    if: needs.resolve-tag.outputs.tag != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -110,6 +114,7 @@ jobs:
 
   publish:
     needs: [resolve-tag, build-linux, build-macos, sdist]
+    if: needs.resolve-tag.outputs.tag != ''
     runs-on: ubuntu-latest
     permissions:
       id-token: write
