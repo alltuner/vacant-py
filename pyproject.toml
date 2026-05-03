@@ -1,0 +1,56 @@
+[project]
+name = "vacant"
+version = "0.3.2"
+description = "Python bindings for the vacant Rust engine — domain availability via authoritative DNS."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "David Poblador i Garcia", email = "david@poblador.com" }]
+requires-python = ">=3.11"
+keywords = ["domain", "availability", "dns", "registrar", "tld"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Rust",
+    "Topic :: Internet :: Name Service (DNS)",
+]
+
+[project.urls]
+Homepage = "https://github.com/alltuner/vacant-py"
+Repository = "https://github.com/alltuner/vacant-py"
+Engine = "https://github.com/alltuner/vacant"
+
+[project.scripts]
+vacant = "vacant.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0",
+    "ruff>=0.14",
+]
+
+[build-system]
+requires = ["maturin>=1.7"]
+build-backend = "maturin"
+
+[tool.maturin]
+manifest-path = "crates/vacant-py/Cargo.toml"
+python-source = "python"
+module-name = "vacant._core"
+features = ["pyo3/extension-module"]
+include = [
+    { path = "python/vacant/rules.toml", format = "sdist" },
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]

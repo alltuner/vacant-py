@@ -1,0 +1,6 @@
+[workspace]
+resolver = "2"
+members = ["crates/vacant-py"]
+
+[profile.release]
+lto = "thin"

@@ -1,0 +1,15 @@
+target/
+.venv/
+__pycache__/
+*.pyc
+*.so
+*.dylib
+*.pyd
+.ruff_cache/
+.pytest_cache/
+dist/
+build/
+wheels/
+*.egg-info/
+.DS_Store
+.env
