@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.5](https://github.com/alltuner/vacant-py/compare/v0.3.4...v0.3.5) (2026-05-03)
+
+
+### Bug Fixes
+
+* gate downstream jobs on resolved tag, not transitive success() ([0077ba0](https://github.com/alltuner/vacant-py/commit/0077ba066ab240ef595d07cefa78e2c334be9e33))
+
 ## [0.3.4](https://github.com/alltuner/vacant-py/compare/v0.3.3...v0.3.4) (2026-05-03)
 
 
